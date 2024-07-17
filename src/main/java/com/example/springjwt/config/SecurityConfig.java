@@ -3,6 +3,8 @@ package com.example.springjwt.config;
 import com.example.springjwt.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,6 +15,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+
+    //AuthenticationManager Bean 등록
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+
+        return configuration.getAuthenticationManager();
+    }
 
 
     // 비밀번호 암호화
@@ -55,7 +65,7 @@ public class SecurityConfig {
         // 커스텀 로그인 필터 등록
         // 이유: jwt방식에서는 로그인 방식을 사용하지 않기 때문에 로그인 필터를 커스텀하여 사용한다.
         http
-                .addFilter(new LoginFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilter(new LoginFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class);
 
 
 
