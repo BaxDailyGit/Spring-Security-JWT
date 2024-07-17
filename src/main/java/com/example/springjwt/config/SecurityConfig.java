@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import com.example.springjwt.jwt.JWTFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -76,11 +77,19 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
+        
+
+        // JWTFilter 등록
+        // 이유: jwt방식에서는 jwt토큰을 검증하기 위해 JWTFilter를 사용한다.
+        http
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+
+
+
         // 커스텀 로그인 필터 등록
         // 이유: jwt방식에서는 로그인 방식을 사용하지 않기 때문에 로그인 필터를 커스텀하여 사용한다.
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
-
 
 
 
