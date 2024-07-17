@@ -1,5 +1,6 @@
 package com.example.springjwt.jwt;
 
+import com.example.springjwt.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,8 +8,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Collection;
+import java.util.Iterator;
 
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -46,10 +50,26 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
 
-    //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
+    //로그인 성공시 실행하는 메소드
+    //로그인 성공시 JWT를 발급하고, 클라이언트에게 전달한다.
+    //JWT는 클라이언트가 서버에 요청을 보낼 때마다 헤더에 담아서 보내야 한다.
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
-        System.out.println("로그인 성공");
+
+        //UserDetailsS
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String username = customUserDetails.getUsername();
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+        GrantedAuthority auth = iterator.next();
+
+        String role = auth.getAuthority();
+
+        String token = jwtUtil.createJwt(username, role, 60*60*10L);
+
+        response.addHeader("Authorization", "Bearer " + token);
     }
 
     //로그인 실패시 실행하는 메소드
